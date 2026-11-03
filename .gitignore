@@ -7,3 +7,8 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 data/
+config.toml
+audit.jsonl
+*.egg-info/
+build/
+dist/

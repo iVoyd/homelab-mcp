@@ -1,0 +1,35 @@
+# Copy to ~/.config/homelab-mcp/config.toml (or pass --config) and edit.
+
+[k3s]
+# Command used to run kubectl. On a k3s node "k3s kubectl" also works.
+kubectl = ["kubectl"]
+# Optional kubeconfig path; empty means kubectl's default.
+kubeconfig = ""
+allowed_namespaces = ["default"]
+timeout_seconds = 15
+
+[logs]
+# Hard upper bound is 200 regardless of this value.
+max_lines = 200
+
+[sqlite]
+timeout_seconds = 5
+max_rows = 200
+
+[sqlite.databases]
+# alias = "absolute path"; opened read-only.
+# job_radar = "/home/you/.local/share/job_radar/job_radar.db"
+
+[disk]
+# disk_usage() only reports on these paths (or directories under them).
+allowed_paths = ["/", "/home"]
+
+[systemd]
+timeout_seconds = 10
+
+[audit]
+path = "~/.local/state/homelab-mcp/audit.jsonl"
+
+[redaction]
+# Extra regexes, applied after the built-in ones (API keys, tokens, emails).
+patterns = []

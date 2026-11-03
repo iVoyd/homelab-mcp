@@ -1,0 +1,6 @@
+[
+  {"next": 1762225200000000, "left": 3600000000, "last": 1762138800000000,
+   "passed": 82800000000, "unit": "apt-daily.timer", "activates": "apt-daily.service"},
+  {"next": 0, "left": 0, "last": 0, "passed": 0,
+   "unit": "fstrim.timer", "activates": "fstrim.service"}
+]
