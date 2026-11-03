@@ -12,9 +12,11 @@ dependencies = ["mcp>=2.3,<3"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6"]
+demo = ["anthropic>=2.4,<3"]
 
 [project.scripts]
 homelab-mcp = "homelab_mcp.cli:main"
+homelab-mcp-demo = "homelab_mcp.demo:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

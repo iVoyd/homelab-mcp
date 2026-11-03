@@ -14,6 +14,7 @@ from .service import Service
 
 EXPECTED_TOOLS = {
     "k3s_cronjobs", "k3s_jobs", "job_logs", "sqlite_query", "systemd_timers", "disk_usage",
+    "run_job",
 }
 
 
@@ -57,6 +58,17 @@ def selftest(service: Service, out=None) -> int:
 
     checks.append(("systemd_timers", service.systemd_timers()))
     checks.append(("disk_usage", service.disk_usage()))
+
+    # run_job is only ever called without confirm here, so it cannot create anything.
+    if cfg.actions_allowed_cronjobs:
+        target = cfg.actions_allowed_cronjobs[0]
+        plan = service.run_job(target, confirm=False)
+        if "error" not in plan and plan.get("executed") is not False:
+            plan = {"error": "dry run reported executed!"}
+        checks.append((f"run_job dry run({target})", plan))
+    else:
+        checks.append(("run_job dry run", "no actions.allowed_cronjobs"))
+    print(f"actions.enabled = {str(cfg.actions_enabled).lower()}", file=out)
 
     failures = 0
     for name, result in checks:

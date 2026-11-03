@@ -6,6 +6,7 @@ import json
 from collections.abc import Callable
 from typing import Any
 
+from .actions import Actions
 from .audit import AuditLog, now_ms
 from .config import Config
 from .errors import ToolDenied, ToolError
@@ -24,6 +25,7 @@ class Service:
         self.k3s = K3s(config, runner)
         self.sqlite = SqliteReadOnly(config)
         self.host = Host(config, runner)
+        self.actions = Actions(config, self.k3s)
 
     def call(self, tool: str, fn: Callable[..., dict], **arguments: Any) -> dict:
         """Run a tool, never raise: errors become {"error": ...} results."""
@@ -50,6 +52,7 @@ class Service:
             result_bytes=size,
             duration_ms=now_ms() - start,
             error=self.redactor.text(error) if error else None,
+            executed=result.get("executed"),
         )
         return result
 
@@ -71,3 +74,6 @@ class Service:
 
     def disk_usage(self, paths: list[str] | None = None) -> dict:
         return self.call("disk_usage", self.host.disk_usage, paths=paths)
+
+    def run_job(self, cronjob: str, confirm: bool = False) -> dict:
+        return self.call("run_job", self.actions.run_job, cronjob=cronjob, confirm=confirm)

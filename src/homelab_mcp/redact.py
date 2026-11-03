@@ -20,7 +20,7 @@ BUILTIN_PATTERNS: list[tuple[str, str]] = [
     (r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}", "[REDACTED:email]"),
     # KEY=value / "key": "value" style assignments for secret-looking names.
     (
-        r"(?i)\b([A-Za-z0-9_]*(?:api[_-]?key|token|secret|passw(?:or)?d|credential)s?)"
+        r"(?i)\b(?![0-9])([A-Za-z0-9_]*(?:api[_-]?key|token|secret|passw(?:or)?d|credential)s?)"
         r"(\"?\s*[:=]\s*\"?)(?!\[REDACTED)([^\s\"',;]+)",
         r"\1\2[REDACTED]",
     ),

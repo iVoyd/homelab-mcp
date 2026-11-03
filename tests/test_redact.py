@@ -46,3 +46,17 @@ def test_nested_structures():
 def test_custom_pattern_applies_through_service(service, runner):
     runner.add(("logs",), "ticket HOMELAB-0042 opened\n")
     assert "HOMELAB-0042" not in service.job_logs("default", "j")["log"]
+
+
+def test_names_starting_with_a_digit_are_not_secret_keys():
+    # Real false positive from the PC1 demo: a company name in a job-board count.
+    r = Redactor()
+    line = "1Password: 41 open, 0 new, 0 changed, 0 closed"
+    assert r.text(line) == line
+
+
+def test_bare_secret_key_names_still_redacted():
+    r = Redactor()
+    for text in ["PASSWORD=hunter2", "token: abc123", "Secret=xyz", "password: 41",
+                 "MY_API_KEY=k1", "credentials=a:b"]:
+        assert "[REDACTED]" in r.text(text), text

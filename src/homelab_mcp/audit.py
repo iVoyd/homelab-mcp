@@ -23,6 +23,7 @@ class AuditLog:
         result_bytes: int,
         duration_ms: float,
         error: str | None = None,
+        executed: bool | None = None,
     ) -> None:
         record = {
             "ts": datetime.now(UTC).isoformat(timespec="seconds"),
@@ -35,6 +36,8 @@ class AuditLog:
         }
         if error:
             record["error"] = error
+        if executed is not None:
+            record["executed"] = executed
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with self.path.open("a", encoding="utf-8") as fh:
             fh.write(json.dumps(record, default=str) + "\n")

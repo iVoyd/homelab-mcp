@@ -29,6 +29,9 @@ class Config:
     systemd_timeout: float = 10.0
     audit_path: str = "~/.local/state/homelab-mcp/audit.jsonl"
     redaction_patterns: list[str] = field(default_factory=list)
+    actions_enabled: bool = False
+    actions_kubeconfig: str = ""
+    actions_allowed_cronjobs: list[str] = field(default_factory=list)
     source: str = "<defaults>"
 
 
@@ -69,6 +72,7 @@ def config_from_dict(data: dict, source: str = "<dict>") -> Config:
     systemd = data.get("systemd", {})
     audit = data.get("audit", {})
     redaction = data.get("redaction", {})
+    actions = data.get("actions", {})
 
     kubectl = k3s.get("kubectl", ["kubectl"])
     if isinstance(kubectl, str):
@@ -80,6 +84,19 @@ def config_from_dict(data: dict, source: str = "<dict>") -> Config:
     for alias, db_path in databases.items():
         if not Path(db_path).expanduser().is_absolute():
             raise ConfigError(f"sqlite.databases.{alias} must be an absolute path")
+
+    enabled = actions.get("enabled", False)
+    if not isinstance(enabled, bool):
+        raise ConfigError("actions.enabled must be true or false")
+    action_kubeconfig = actions.get("kubeconfig", "")
+    if enabled and not action_kubeconfig:
+        raise ConfigError("actions.enabled = true needs actions.kubeconfig (a separate kubeconfig)")
+    if enabled and action_kubeconfig == k3s.get("kubeconfig", ""):
+        raise ConfigError("actions.kubeconfig must differ from k3s.kubeconfig")
+    allowed_cronjobs = list(actions.get("allowed_cronjobs", []))
+    for entry in allowed_cronjobs:
+        if not isinstance(entry, str) or entry.count("/") != 1:
+            raise ConfigError(f"actions.allowed_cronjobs entry {entry!r} must be 'namespace/name'")
 
     return Config(
         kubectl=list(kubectl),
@@ -94,5 +111,8 @@ def config_from_dict(data: dict, source: str = "<dict>") -> Config:
         systemd_timeout=float(systemd.get("timeout_seconds", 10)),
         audit_path=audit.get("path", "~/.local/state/homelab-mcp/audit.jsonl"),
         redaction_patterns=list(redaction.get("patterns", [])),
+        actions_enabled=enabled,
+        actions_kubeconfig=action_kubeconfig,
+        actions_allowed_cronjobs=allowed_cronjobs,
         source=source,
     )
