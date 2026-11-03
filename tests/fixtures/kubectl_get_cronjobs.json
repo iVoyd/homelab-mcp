@@ -1,0 +1,28 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "batch/v1",
+      "kind": "CronJob",
+      "metadata": {"name": "job-radar-nightly", "namespace": "default"},
+      "spec": {
+        "schedule": "15 3 * * *",
+        "timeZone": "Europe/Dublin",
+        "suspend": false,
+        "jobTemplate": {"spec": {}}
+      },
+      "status": {
+        "lastScheduleTime": "2026-11-03T03:15:00Z",
+        "lastSuccessfulTime": "2026-11-03T03:19:42Z"
+      }
+    },
+    {
+      "apiVersion": "batch/v1",
+      "kind": "CronJob",
+      "metadata": {"name": "backup-db", "namespace": "default"},
+      "spec": {"schedule": "0 4 * * 0", "suspend": true, "jobTemplate": {"spec": {}}},
+      "status": {"active": [{"kind": "Job", "name": "backup-db-29000000"}]}
+    }
+  ]
+}

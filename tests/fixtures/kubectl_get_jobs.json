@@ -1,0 +1,44 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "metadata": {
+        "name": "job-radar-nightly-29368995",
+        "namespace": "default",
+        "creationTimestamp": "2026-11-02T03:15:00Z",
+        "ownerReferences": [{"kind": "CronJob", "name": "job-radar-nightly"}]
+      },
+      "status": {
+        "startTime": "2026-11-02T03:15:00Z",
+        "failed": 1,
+        "conditions": [
+          {"type": "Failed", "status": "True", "reason": "BackoffLimitExceeded",
+           "lastTransitionTime": "2026-11-02T03:16:30Z"}
+        ]
+      }
+    },
+    {
+      "metadata": {
+        "name": "job-radar-nightly-29370435",
+        "namespace": "default",
+        "creationTimestamp": "2026-11-03T03:15:00Z",
+        "ownerReferences": [{"kind": "CronJob", "name": "job-radar-nightly"}]
+      },
+      "status": {
+        "startTime": "2026-11-03T03:15:00Z",
+        "completionTime": "2026-11-03T03:19:42Z",
+        "succeeded": 1,
+        "conditions": [{"type": "Complete", "status": "True"}]
+      }
+    },
+    {
+      "metadata": {
+        "name": "manual-check",
+        "namespace": "default",
+        "creationTimestamp": "2026-11-03T10:00:00Z"
+      },
+      "status": {"startTime": "2026-11-03T10:00:01Z", "active": 1}
+    }
+  ]
+}

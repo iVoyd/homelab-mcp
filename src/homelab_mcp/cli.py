@@ -17,10 +17,11 @@ EXPECTED_TOOLS = {
 }
 
 
-def selftest(service: Service, out=sys.stdout) -> int:
+def selftest(service: Service, out=None) -> int:
     """Call every tool once against the real host. Returns a process exit code."""
+    out = out or sys.stdout
     cfg = service.config
-    checks: list[tuple[str, dict | None]] = []
+    checks: list[tuple[str, dict | str]] = []  # str = reason skipped
 
     tools = {t.name for t in asyncio.run(build_server(service).list_tools())}
     missing = EXPECTED_TOOLS - tools
@@ -37,9 +38,10 @@ def selftest(service: Service, out=sys.stdout) -> int:
                 (f"job_logs({ns}, {latest['name']})", service.job_logs(ns, latest["name"], 5))
             )
         else:
-            checks.append(("job_logs", None))
+            checks.append(("job_logs", "no Jobs found to read logs from"))
     else:
-        checks += [("k3s_cronjobs", None), ("k3s_jobs", None), ("job_logs", None)]
+        skip = "no k3s.allowed_namespaces"
+        checks += [("k3s_cronjobs", skip), ("k3s_jobs", skip), ("job_logs", skip)]
 
     if cfg.sqlite_databases:
         alias = sorted(cfg.sqlite_databases)[0]
@@ -51,22 +53,21 @@ def selftest(service: Service, out=sys.stdout) -> int:
         guard = {} if denied.get("denied") else {"error": "write was not denied!"}
         checks.append((f"sqlite read-only guard({alias})", guard))
     else:
-        checks.append(("sqlite_query", None))
+        checks.append(("sqlite_query", "no sqlite.databases"))
 
     checks.append(("systemd_timers", service.systemd_timers()))
     checks.append(("disk_usage", service.disk_usage()))
 
     failures = 0
     for name, result in checks:
-        if result is None:
-            status = "SKIP (not configured)"
+        if isinstance(result, str):
+            line = f"SKIP  {name}  ({result})"
         elif "error" in result:
             failures += 1
-            status = f"FAIL {result['error']}"
+            line = f"FAIL  {name}  {result['error']}"
         else:
-            status = "OK"
-        print(f"{status.split()[0]:5} {name}" + (f"  {status[5:]}" if " " in status else ""),
-              file=out)
+            line = f"OK    {name}"
+        print(line, file=out)
     print(f"\nconfig: {cfg.source}\naudit log: {service.audit.path}", file=out)
     print("selftest " + ("passed" if failures == 0 else f"failed ({failures})"), file=out)
     return 0 if failures == 0 else 1

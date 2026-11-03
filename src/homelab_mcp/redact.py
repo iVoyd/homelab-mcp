@@ -21,7 +21,7 @@ BUILTIN_PATTERNS: list[tuple[str, str]] = [
     # KEY=value / "key": "value" style assignments for secret-looking names.
     (
         r"(?i)\b([A-Za-z0-9_]*(?:api[_-]?key|token|secret|passw(?:or)?d|credential)s?)"
-        r"(\"?\s*[:=]\s*\"?)([^\s\"',;]+)",
+        r"(\"?\s*[:=]\s*\"?)(?!\[REDACTED)([^\s\"',;]+)",
         r"\1\2[REDACTED]",
     ),
 ]

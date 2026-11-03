@@ -79,16 +79,15 @@ class SqliteReadOnly:
             try:
                 cur = conn.execute(cleaned)
                 rows = cur.fetchmany(max_rows + 1)
-            except sqlite3.OperationalError as exc:
-                if "interrupted" in str(exc):
+            except sqlite3.DatabaseError as exc:
+                msg = str(exc)
+                if "interrupted" in msg:
                     raise ToolError(
                         f"query timed out after {self.config.sqlite_timeout:g}s"
                     ) from exc
-                if "not authorized" in str(exc):
-                    raise ToolDenied(f"query not allowed: {exc}") from exc
-                raise ToolError(f"sqlite error: {exc}") from exc
-            except sqlite3.DatabaseError as exc:
-                raise ToolError(f"sqlite error: {exc}") from exc
+                if "not authorized" in msg or "readonly" in msg:
+                    raise ToolDenied(f"query not allowed: {msg}") from exc
+                raise ToolError(f"sqlite error: {msg}") from exc
             columns = [d[0] for d in cur.description or []]
         finally:
             conn.close()
