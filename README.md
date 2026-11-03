@@ -115,13 +115,14 @@ tests use a temporary database.
 | `ruff check` | clean |
 | stdio round trip with the MCP Python client | lists 6 tools; `sqlite_query` returns redacted rows |
 | `--selftest` in the dev container | sqlite, SQL guard, disk OK; k3s and systemd FAIL as expected (no kubectl or systemd there) |
-| `--selftest` on the PC1 VM | not run yet |
+| `--selftest` on the PC1 VM (namespace `job-radar`, job_radar DB) | all 8 checks OK |
+| GitHub Actions CI (3.11, 3.12, 3.13) | green |
 
 ## Limitations
 
 - The kubectl and systemctl fixtures were written by hand to match the real output
-  formats. They were not recorded from this cluster. The VM selftest is the real check,
-  and the systemd JSON field names (`next`, `last` in microseconds) need confirming there.
+  formats, not recorded from this cluster. The selftest on the VM passed against the real
+  kubectl and systemd, so the parsing matches what PC1 actually returns.
 - `job_logs` uses `kubectl logs job/NAME`, which reads one pod. For a Job that retried,
   that may not be the pod that failed.
 - Redaction uses patterns. It catches common token formats and `KEY=value` pairs, but
