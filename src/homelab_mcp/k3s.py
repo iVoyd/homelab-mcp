@@ -22,17 +22,19 @@ class K3s:
         self.runner = runner
 
     # -- helpers -----------------------------------------------------------
-    def _check_namespace(self, namespace: str) -> None:
+    def check_namespace(self, namespace: str) -> None:
         if namespace not in self.config.allowed_namespaces:
             raise ToolDenied(
                 f"namespace {namespace!r} is not allowed; allowed: "
                 f"{', '.join(self.config.allowed_namespaces) or '(none)'}"
             )
 
-    def _kubectl(self, *args: str) -> str:
+    def kubectl(self, *args: str, kubeconfig: str | None = None) -> str:
+        """Run kubectl with the read-only kubeconfig unless another is given."""
         argv = list(self.config.kubectl)
-        if self.config.kubeconfig:
-            argv += ["--kubeconfig", self.config.kubeconfig]
+        kubeconfig = self.config.kubeconfig if kubeconfig is None else kubeconfig
+        if kubeconfig:
+            argv += ["--kubeconfig", kubeconfig]
         argv += list(args)
         try:
             res = self.runner(argv, self.config.k3s_timeout)
@@ -43,7 +45,7 @@ class K3s:
         return res.stdout
 
     def _get_json(self, kind: str, namespace: str) -> list[dict]:
-        out = self._kubectl("get", kind, "-n", namespace, "-o", "json")
+        out = self.kubectl("get", kind, "-n", namespace, "-o", "json")
         try:
             return json.loads(out).get("items", [])
         except json.JSONDecodeError as exc:
@@ -51,7 +53,7 @@ class K3s:
 
     # -- tools -------------------------------------------------------------
     def cronjobs(self, namespace: str) -> dict:
-        self._check_namespace(namespace)
+        self.check_namespace(namespace)
         result = []
         for item in self._get_json("cronjobs", namespace):
             spec = item.get("spec", {})
@@ -71,7 +73,7 @@ class K3s:
         return {"namespace": namespace, "cronjobs": result}
 
     def jobs(self, namespace: str, limit: int = 10) -> dict:
-        self._check_namespace(namespace)
+        self.check_namespace(namespace)
         limit = max(1, min(int(limit), JOBS_LIMIT_CAP))
         items = self._get_json("jobs", namespace)
         items.sort(key=lambda j: j["metadata"].get("creationTimestamp", ""), reverse=True)
@@ -79,11 +81,11 @@ class K3s:
         return {"namespace": namespace, "total": len(items), "jobs": jobs}
 
     def logs(self, namespace: str, job: str, tail: int = 100) -> dict:
-        self._check_namespace(namespace)
+        self.check_namespace(namespace)
         if not NAME_RE.match(job or ""):
             raise ToolDenied(f"invalid job name: {job!r}")
         tail = max(1, min(int(tail), self.config.log_max_lines, LOG_LINES_HARD_CAP))
-        out = self._kubectl(
+        out = self.kubectl(
             "logs", "-n", namespace, f"job/{job}", f"--tail={tail}", "--all-containers=true"
         )
         lines = out.splitlines()[-tail:]

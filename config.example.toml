@@ -33,3 +33,14 @@ path = "~/.local/state/homelab-mcp/audit.jsonl"
 [redaction]
 # Extra regexes, applied after the built-in ones (API keys, tokens, emails).
 patterns = []
+
+[actions]
+# run_job stays a dry run (returns the plan) unless this is true AND the call
+# passes confirm=true.
+enabled = false
+# Separate kubeconfig used only by run_job. It needs "get cronjobs" and
+# "create jobs" in the allowed namespaces (see deploy/rbac.yaml). Required
+# when enabled = true, and must differ from k3s.kubeconfig.
+kubeconfig = ""
+# "namespace/cronjob" entries run_job may start.
+allowed_cronjobs = []
