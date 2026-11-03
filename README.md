@@ -263,12 +263,12 @@ one run through the real stdio server.
 
 | Check | Result |
 |---|---|
-| `pytest` (cloud dev container, Python 3.13) | 93 passed |
+| `pytest` (cloud dev container, Python 3.13) | 95 passed |
 | `ruff check` | clean |
 | GitHub Actions CI (3.11, 3.12, 3.13) | green on Milestone 1 |
 | `--selftest` on the PC1 VM (namespace `job-radar`, job_radar DB), Milestone 1 | all 8 checks OK |
 | `--selftest` on PC1 with reader/runner kubeconfigs, Milestone 2 | all 9 checks OK, including the `run_job` dry run |
-| Demo on PC1 (`claude-haiku-5-5`, read-only tools only) | answered correctly: 5 tool calls, 19,191 input / 1,333 output tokens, $0.0019 |
+| Demo on PC1 (`claude-haiku-5-5`, read-only tools only) | answered correctly: 5 tool calls, 19,191 input (10,473 from cache) / 1,333 output tokens, $0.0019 |
 | `scripts/make-kubeconfig.sh` | used on PC1 to create both kubeconfigs |
 
 ## Limitations
@@ -278,7 +278,9 @@ one run through the real stdio server.
   kubectl and systemd, so the parsing matches what PC1 actually returns.
 - `job_logs` uses `kubectl logs job/NAME`, which reads one pod. For a Job that retried,
   that may not be the pod that failed.
-- Redaction uses patterns (see the security table).
+- Redaction uses patterns (see the security table). It can also over-redact: the first
+  demo run hid a count next to the company name "1Password". That case is fixed, and the
+  committed transcript still shows the old `[REDACTED]`.
 - `deploy/rbac.yaml` is written for the `job-radar` namespace only. For more namespaces,
   copy the Role/RoleBinding per namespace.
 - The ServiceAccount tokens are long-lived Secrets, which is simple for a home lab.
