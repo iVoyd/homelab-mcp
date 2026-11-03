@@ -6,9 +6,9 @@ runs read-only SQLite queries, and lists systemd timers and disk usage. Every ou
 redacted and every call goes to an audit log. There is one write action, `run_job`, and it
 stays off unless you turn it on.
 
-Status: Milestone 1 (read-only tools) is done and verified on the PC1 VM. Milestone 2 (the
-approval-gated action, client setup and security model) is built. Its demo still has to be
-recorded on the VM. See [SPEC.md](SPEC.md).
+Status: Milestones 1 and 2 are done and verified on the PC1 VM: the read-only tools, the
+approval-gated action, client setup, the security model, and a recorded demo
+([docs/demo-transcript.md](docs/demo-transcript.md)). See [SPEC.md](SPEC.md).
 
 ## How it works
 
@@ -267,9 +267,9 @@ one run through the real stdio server.
 | `ruff check` | clean |
 | GitHub Actions CI (3.11, 3.12, 3.13) | green on Milestone 1 |
 | `--selftest` on the PC1 VM (namespace `job-radar`, job_radar DB), Milestone 1 | all 8 checks OK |
-| `--selftest` on PC1 with reader/runner kubeconfigs, Milestone 2 | not run yet |
-| Demo transcript on PC1 | not recorded yet |
-| `scripts/make-kubeconfig.sh` | checked against a fake kubectl only |
+| `--selftest` on PC1 with reader/runner kubeconfigs, Milestone 2 | all 9 checks OK, including the `run_job` dry run |
+| Demo on PC1 (`claude-haiku-5-5`, read-only tools only) | answered correctly: 5 tool calls, 19,191 input / 1,333 output tokens, $0.0019 |
+| `scripts/make-kubeconfig.sh` | used on PC1 to create both kubeconfigs |
 
 ## Limitations
 
