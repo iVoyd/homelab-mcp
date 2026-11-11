@@ -4,10 +4,10 @@
   "items": [
     {
       "metadata": {
-        "name": "job-radar-nightly-29368995",
+        "name": "nightly-report-29368995",
         "namespace": "default",
         "creationTimestamp": "2026-11-02T03:15:00Z",
-        "ownerReferences": [{"kind": "CronJob", "name": "job-radar-nightly"}]
+        "ownerReferences": [{"kind": "CronJob", "name": "nightly-report"}]
       },
       "status": {
         "startTime": "2026-11-02T03:15:00Z",
@@ -20,10 +20,10 @@
     },
     {
       "metadata": {
-        "name": "job-radar-nightly-29370435",
+        "name": "nightly-report-29370435",
         "namespace": "default",
         "creationTimestamp": "2026-11-03T03:15:00Z",
-        "ownerReferences": [{"kind": "CronJob", "name": "job-radar-nightly"}]
+        "ownerReferences": [{"kind": "CronJob", "name": "nightly-report"}]
       },
       "status": {
         "startTime": "2026-11-03T03:15:00Z",

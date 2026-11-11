@@ -23,7 +23,7 @@ def test_builtin_patterns():
 
 def test_harmless_text_unchanged():
     r = Redactor()
-    s = "scored 42 postings in 3.2s, tokens_in=51234 cost_usd=0.06"
+    s = "scored 42 records in 3.2s, tokens_in=51234 cost_usd=0.06"
     assert r.text(s) == s
 
 

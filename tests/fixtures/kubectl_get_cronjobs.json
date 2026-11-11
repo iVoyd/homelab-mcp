@@ -5,7 +5,7 @@
     {
       "apiVersion": "batch/v1",
       "kind": "CronJob",
-      "metadata": {"name": "job-radar-nightly", "namespace": "default"},
+      "metadata": {"name": "nightly-report", "namespace": "default"},
       "spec": {
         "schedule": "15 3 * * *",
         "timeZone": "Europe/Dublin",

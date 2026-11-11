@@ -40,11 +40,11 @@ def scripted():
                     tool_use("t2", "k3s_jobs", {"namespace": "default", "limit": 5})]),
         NS(stop_reason="tool_use", usage=usage(300, 40, cr=1400),
            content=[tool_use("t3", "job_logs",
-                             {"namespace": "default", "job": "job-radar-nightly-29370435"}),
-                    tool_use("t4", "run_job", {"cronjob": "default/job-radar-nightly",
+                             {"namespace": "default", "job": "nightly-report-29370435"}),
+                    tool_use("t4", "run_job", {"cronjob": "default/nightly-report",
                                                "confirm": True})]),
         NS(stop_reason="end_turn", usage=usage(900, 120, cr=1700),
-           content=[text("Yes. job-radar-nightly-29370435 succeeded in 282s and found "
+           content=[text("Yes. nightly-report-29370435 succeeded in 282s and found "
                          "3 new matches.")]),
     ]
 
@@ -69,7 +69,7 @@ def run(service, responses):
 
 def test_loop_calls_real_tools_and_records_answer(service, runner):
     t, client = run(service, scripted())
-    assert t.answer.startswith("Yes. job-radar-nightly-29370435 succeeded")
+    assert t.answer.startswith("Yes. nightly-report-29370435 succeeded")
     assert [s.name for s in t.steps if s.kind == "tool"] == [
         "k3s_cronjobs", "k3s_jobs", "job_logs", "run_job",
     ]

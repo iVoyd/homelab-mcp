@@ -2,7 +2,7 @@
   "apiVersion": "batch/v1",
   "kind": "CronJob",
   "metadata": {
-    "name": "job-radar-nightly",
+    "name": "nightly-report",
     "namespace": "default"
   },
   "spec": {

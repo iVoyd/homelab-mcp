@@ -283,7 +283,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if not os.environ.get("ANTHROPIC_API_KEY"):
         print("ANTHROPIC_API_KEY is not set. Load it first, e.g.:\n"
-              "  set -a; . ~/.config/job_radar/env; set +a", file=sys.stderr)
+              "  set -a; . ~/.config/homelab-mcp/env; set +a", file=sys.stderr)
         return 2
     try:
         import anthropic  # noqa: F401

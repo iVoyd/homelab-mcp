@@ -81,7 +81,7 @@ class Actions:
     @staticmethod
     def _parse(cronjob: str) -> tuple[str, str]:
         if not isinstance(cronjob, str) or cronjob.count("/") != 1:
-            raise ToolDenied("cronjob must be 'namespace/name', e.g. 'job-radar/job-radar-run'")
+            raise ToolDenied("cronjob must be 'namespace/name', e.g. 'pipeline/nightly-run'")
         namespace, name = cronjob.split("/")
         for part in (namespace, name):
             if not NAME_RE.match(part):

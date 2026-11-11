@@ -6,9 +6,9 @@ from homelab_mcp.runner import CommandError
 def test_cronjobs_parses_schedule_and_status(service, runner):
     out = service.k3s_cronjobs("default")
     by_name = {c["name"]: c for c in out["cronjobs"]}
-    nightly = by_name["job-radar-nightly"]
+    nightly = by_name["nightly-report"]
     assert nightly == {
-        "name": "job-radar-nightly",
+        "name": "nightly-report",
         "schedule": "15 3 * * *",
         "timezone": "Europe/Dublin",
         "suspended": False,
@@ -33,12 +33,12 @@ def test_namespace_not_allowed_is_denied_without_running_kubectl(service, runner
 def test_jobs_newest_first_with_status_and_duration(service):
     out = service.k3s_jobs("default", limit=10)
     names = [j["name"] for j in out["jobs"]]
-    assert names == ["manual-check", "job-radar-nightly-29370435", "job-radar-nightly-29368995"]
+    assert names == ["manual-check", "nightly-report-29370435", "nightly-report-29368995"]
     running, ok, failed = out["jobs"]
     assert running["status"] == "running" and running["duration_seconds"] is None
     assert ok["status"] == "succeeded"
     assert ok["duration_seconds"] == 282
-    assert ok["cronjob"] == "job-radar-nightly"
+    assert ok["cronjob"] == "nightly-report"
     assert failed["status"] == "failed"
     assert failed["failure_reason"] == "BackoffLimitExceeded"
     assert failed["duration_seconds"] == 90
@@ -51,10 +51,10 @@ def test_jobs_limit_is_capped(service):
 
 
 def test_job_logs_are_tailed_capped_and_redacted(service, runner):
-    out = service.job_logs("default", "job-radar-nightly-29370435", tail=500)
+    out = service.job_logs("default", "nightly-report-29370435", tail=500)
     argv, _ = runner.calls[0]
     assert argv == [
-        "kubectl", "logs", "-n", "default", "job/job-radar-nightly-29370435",
+        "kubectl", "logs", "-n", "default", "job/nightly-report-29370435",
         "--tail=200", "--all-containers=true",
     ]
     log = out["log"]
@@ -63,7 +63,7 @@ def test_job_logs_are_tailed_capped_and_redacted(service, runner):
     assert "theo@example.com" not in log
     assert "abc.def.ghijkl" not in log
     assert "[REDACTED:anthropic_key]" in log
-    assert "scored 42 postings" in log
+    assert "scored 42 records" in log
     assert "untrusted" in out["note"]
 
 

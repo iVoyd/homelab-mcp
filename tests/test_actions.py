@@ -9,14 +9,14 @@ from homelab_mcp.service import Service
 
 from .conftest import fixture
 
-TARGET = "default/job-radar-nightly"
+TARGET = "default/nightly-report"
 FIXED = datetime(2026, 11, 3, 9, 30, 0, tzinfo=UTC)
 
 
 @pytest.fixture
 def action_runner(runner):
-    runner.add(("get", "cronjob", "job-radar-nightly"), fixture("kubectl_get_cronjob_single.json"))
-    runner.add(("create", "job"), "job.batch/job-radar-nightly-manual-20261103093000\n")
+    runner.add(("get", "cronjob", "nightly-report"), fixture("kubectl_get_cronjob_single.json"))
+    runner.add(("create", "job"), "job.batch/nightly-report-manual-20261103093000\n")
     return runner
 
 
@@ -42,7 +42,7 @@ def test_disabled_returns_plan_even_with_confirm(make_config, action_runner):
     out = svc.run_job(TARGET, confirm=True)
     assert out["executed"] is False
     assert "disabled" in out["reason"]
-    assert out["plan"]["job_name"] == "job-radar-nightly-manual-20261103093000"
+    assert out["plan"]["job_name"] == "nightly-report-manual-20261103093000"
     assert out["plan"]["cronjob_schedule"] == "15 3 * * *"
     assert creates(action_runner) == []
     assert audit(svc)[-1]["executed"] is False
@@ -61,12 +61,12 @@ def test_enabled_and_confirm_creates_job_with_action_kubeconfig(make_config, act
     svc = make_service(make_config, action_runner, enabled=True)
     out = svc.run_job(TARGET, confirm=True)
     assert out["executed"] is True
-    assert out["created"] == "job.batch/job-radar-nightly-manual-20261103093000"
+    assert out["created"] == "job.batch/nightly-report-manual-20261103093000"
     (argv,) = creates(action_runner)
     assert argv == [
         "kubectl", "--kubeconfig", "/home/voyd/.kube/homelab-mcp-runner.yaml",
-        "create", "job", "job-radar-nightly-manual-20261103093000",
-        "--from=cronjob/job-radar-nightly", "-n", "default", "-o", "name",
+        "create", "job", "nightly-report-manual-20261103093000",
+        "--from=cronjob/nightly-report", "-n", "default", "-o", "name",
     ]
     # The lookup used the read-only kubeconfig (none configured here), not the action one.
     get_argv = next(a for a, _ in action_runner.calls if "get" in a)
@@ -78,7 +78,7 @@ def test_enabled_and_confirm_creates_job_with_action_kubeconfig(make_config, act
 
 @pytest.mark.parametrize(
     "cronjob",
-    ["default/backup-db", "kube-system/job-radar-nightly", "job-radar-nightly", "a/b/c",
+    ["default/backup-db", "kube-system/nightly-report", "nightly-report", "a/b/c",
      "default/--all", "default/", ""],
 )
 def test_not_allowlisted_or_malformed_is_denied(make_config, action_runner, cronjob):
