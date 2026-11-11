@@ -1,15 +1,15 @@
-# Two ServiceAccounts for homelab-mcp in the job-radar namespace.
+# Two ServiceAccounts for homelab-mcp in the pipeline namespace.
 #   homelab-mcp-reader: used by the read-only tools (k3s.kubeconfig)
 #   homelab-mcp-runner: used only by run_job (actions.kubeconfig)
 # For another namespace, copy this file and change every "namespace:".
 # Apply with your admin kubeconfig:  sudo k3s kubectl apply -f deploy/rbac.yaml
 apiVersion: v1
 kind: ServiceAccount
-metadata: {name: homelab-mcp-reader, namespace: job-radar}
+metadata: {name: homelab-mcp-reader, namespace: pipeline}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
-metadata: {name: homelab-mcp-reader, namespace: job-radar}
+metadata: {name: homelab-mcp-reader, namespace: pipeline}
 rules:
   - apiGroups: ["batch"]
     resources: ["cronjobs", "jobs"]
@@ -23,26 +23,26 @@ rules:
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
-metadata: {name: homelab-mcp-reader, namespace: job-radar}
+metadata: {name: homelab-mcp-reader, namespace: pipeline}
 roleRef: {apiGroup: rbac.authorization.k8s.io, kind: Role, name: homelab-mcp-reader}
 subjects:
-  - {kind: ServiceAccount, name: homelab-mcp-reader, namespace: job-radar}
+  - {kind: ServiceAccount, name: homelab-mcp-reader, namespace: pipeline}
 ---
 apiVersion: v1
 kind: Secret
 type: kubernetes.io/service-account-token
 metadata:
   name: homelab-mcp-reader-token
-  namespace: job-radar
+  namespace: pipeline
   annotations: {kubernetes.io/service-account.name: homelab-mcp-reader}
 ---
 apiVersion: v1
 kind: ServiceAccount
-metadata: {name: homelab-mcp-runner, namespace: job-radar}
+metadata: {name: homelab-mcp-runner, namespace: pipeline}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
-metadata: {name: homelab-mcp-runner, namespace: job-radar}
+metadata: {name: homelab-mcp-runner, namespace: pipeline}
 rules:
   # "kubectl create job --from=cronjob/X" reads the CronJob, then creates a Job.
   - apiGroups: ["batch"]
@@ -54,15 +54,15 @@ rules:
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
-metadata: {name: homelab-mcp-runner, namespace: job-radar}
+metadata: {name: homelab-mcp-runner, namespace: pipeline}
 roleRef: {apiGroup: rbac.authorization.k8s.io, kind: Role, name: homelab-mcp-runner}
 subjects:
-  - {kind: ServiceAccount, name: homelab-mcp-runner, namespace: job-radar}
+  - {kind: ServiceAccount, name: homelab-mcp-runner, namespace: pipeline}
 ---
 apiVersion: v1
 kind: Secret
 type: kubernetes.io/service-account-token
 metadata:
   name: homelab-mcp-runner-token
-  namespace: job-radar
+  namespace: pipeline
   annotations: {kubernetes.io/service-account.name: homelab-mcp-runner}

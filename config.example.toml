@@ -18,7 +18,7 @@ max_rows = 200
 
 [sqlite.databases]
 # alias = "absolute path"; opened read-only.
-# job_radar = "/home/you/.local/share/job_radar/job_radar.db"
+# pipeline = "/home/you/.local/share/pipeline/pipeline.db"
 
 [disk]
 # disk_usage() only reports on these paths (or directories under them).

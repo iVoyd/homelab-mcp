@@ -57,11 +57,11 @@ Every tool except `run_job` carries the MCP `readOnlyHint` annotation.
 
 ### `run_job`: the one action
 
-`run_job("job-radar/job-radar-run")` starts a one-off Job from that CronJob. This is the
+`run_job("pipeline/nightly-run")` starts a one-off Job from that CronJob. This is the
 same as `kubectl create job NAME --from=cronjob/...`. The Job is created only if all of
 these hold:
 
-1. `"job-radar/job-radar-run"` is listed in `actions.allowed_cronjobs`,
+1. `"pipeline/nightly-run"` is listed in `actions.allowed_cronjobs`,
 2. its namespace is in `k3s.allowed_namespaces`,
 3. `actions.enabled = true` in config,
 4. the call passes `confirm: true`.
@@ -106,7 +106,7 @@ cd ~/homelab-mcp && python3 -m venv .venv && .venv/bin/pip install -e ".[dev,dem
 
 ### 2. ServiceAccounts and kubeconfigs
 
-[`deploy/rbac.yaml`](deploy/rbac.yaml) creates two ServiceAccounts in `job-radar`:
+[`deploy/rbac.yaml`](deploy/rbac.yaml) creates two ServiceAccounts in `pipeline`:
 `homelab-mcp-reader`, which can get/list CronJobs, Jobs and pods and read pod logs, and
 `homelab-mcp-runner`, which can only get CronJobs and create Jobs. Neither can read Secrets.
 
@@ -114,20 +114,20 @@ cd ~/homelab-mcp && python3 -m venv .venv && .venv/bin/pip install -e ".[dev,dem
 sudo k3s kubectl apply -f deploy/rbac.yaml
 ```
 ```bash
-KUBECTL="sudo k3s kubectl" scripts/make-kubeconfig.sh homelab-mcp-reader job-radar ~/.kube/homelab-mcp-reader.yaml
+KUBECTL="sudo k3s kubectl" scripts/make-kubeconfig.sh homelab-mcp-reader pipeline ~/.kube/homelab-mcp-reader.yaml
 ```
 ```bash
-KUBECTL="sudo k3s kubectl" scripts/make-kubeconfig.sh homelab-mcp-runner job-radar ~/.kube/homelab-mcp-runner.yaml
+KUBECTL="sudo k3s kubectl" scripts/make-kubeconfig.sh homelab-mcp-runner pipeline ~/.kube/homelab-mcp-runner.yaml
 ```
 
 The two files hold tokens. They are written with mode 600, so don't copy them anywhere
 else. To check that the permissions are right:
 
 ```bash
-kubectl --kubeconfig ~/.kube/homelab-mcp-reader.yaml auth can-i create jobs -n job-radar
+kubectl --kubeconfig ~/.kube/homelab-mcp-reader.yaml auth can-i create jobs -n pipeline
 ```
 ```bash
-kubectl --kubeconfig ~/.kube/homelab-mcp-runner.yaml auth can-i create jobs -n job-radar
+kubectl --kubeconfig ~/.kube/homelab-mcp-runner.yaml auth can-i create jobs -n pipeline
 ```
 
 The first should print `no`, the second `yes`.
@@ -142,16 +142,16 @@ Then edit `~/.config/homelab-mcp/config.toml`:
 
 ```toml
 [k3s]
-allowed_namespaces = ["job-radar"]
+allowed_namespaces = ["pipeline"]
 kubeconfig = "/home/voyd/.kube/homelab-mcp-reader.yaml"
 
 [sqlite.databases]
-job_radar = "/home/voyd/.local/share/job_radar/job_radar.db"
+pipeline = "/home/you/.local/share/pipeline/pipeline.db"
 
 [actions]
 enabled = false          # leave off until you want run_job to be able to run
 kubeconfig = "/home/voyd/.kube/homelab-mcp-runner.yaml"
-allowed_cronjobs = ["job-radar/job-radar-run"]
+allowed_cronjobs = ["pipeline/nightly-run"]
 ```
 
 ### 4. Check
@@ -165,7 +165,7 @@ It prints `OK`, `FAIL` or `SKIP` per check and exits non-zero on any failure. To
 tool by hand:
 
 ```bash
-.venv/bin/homelab-mcp --call run_job --args '{"cronjob": "job-radar/job-radar-run"}'
+.venv/bin/homelab-mcp --call run_job --args '{"cronjob": "pipeline/nightly-run"}'
 ```
 
 ## MCP client config
@@ -232,7 +232,7 @@ transcript includes every tool call, its (redacted) result, the answer, and toke
 and cost.
 
 ```bash
-set -a; . ~/.config/job_radar/env; set +a
+set -a; . ~/.config/homelab-mcp/env; set +a
 ```
 ```bash
 .venv/bin/homelab-mcp-demo
@@ -266,7 +266,7 @@ one run through the real stdio server.
 | `pytest` (cloud dev container, Python 3.13) | 95 passed |
 | `ruff check` | clean |
 | GitHub Actions CI (3.11, 3.12, 3.13) | green on Milestone 1 |
-| `--selftest` on the PC1 VM (namespace `job-radar`, job_radar DB), Milestone 1 | all 8 checks OK |
+| `--selftest` on the PC1 VM (one app namespace and its SQLite DB), Milestone 1 | all 8 checks OK |
 | `--selftest` on PC1 with reader/runner kubeconfigs, Milestone 2 | all 9 checks OK, including the `run_job` dry run |
 | Demo on PC1 (`claude-haiku-5-5`, read-only tools only) | answered correctly: 5 tool calls, 19,191 input (10,473 from cache) / 1,333 output tokens, $0.0019 |
 | `scripts/make-kubeconfig.sh` | used on PC1 to create both kubeconfigs |
@@ -281,7 +281,7 @@ one run through the real stdio server.
 - Redaction uses patterns (see the security table). It can also over-redact: the first
   demo run hid a count next to the company name "1Password". That case is fixed, and the
   committed transcript still shows the old `[REDACTED]`.
-- `deploy/rbac.yaml` is written for the `job-radar` namespace only. For more namespaces,
+- `deploy/rbac.yaml` is written for the `pipeline` namespace only. For more namespaces,
   copy the Role/RoleBinding per namespace.
 - The ServiceAccount tokens are long-lived Secrets, which is simple for a home lab.
   Delete and re-create the Secret to rotate a token.
